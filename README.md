@@ -28,10 +28,19 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-4. Download NLTK data:
+4. Download NLTK data (for sentence tokenization):
 ```python
 python -c "import nltk; nltk.download('punkt')"
 ```
+
+5. Download and place the sentence-transformers model:
+The project uses a lightweight local semantic model (e.g., MiniLM) from the `sentence-transformers` library. All model files are stored in the `local_model/` directory for fully offline operation. No external API calls are made during inference.
+
+**External Models Used:**
+- [sentence-transformers](https://www.sbert.net/): MiniLM or similar lightweight transformer model (all files in `local_model/`)
+- [NLTK](https://www.nltk.org/): Only the 'punkt' tokenizer is required for sentence splitting
+
+**Note:** Ensure all model files are present in `local_model/` before running offline. If you need to change the model, download it using the sentence-transformers library and copy the files to `local_model/`.
 
 ## Usage
 
@@ -58,3 +67,11 @@ pdf_section_extraction/
 ## License
 
 MIT License
+
+## Acknowledgements
+
+This project uses the following open-source libraries and models:
+- [sentence-transformers](https://www.sbert.net/) for semantic search and embedding (MiniLM or similar)
+- [NLTK](https://www.nltk.org/) for sentence tokenization
+
+We thank the developers and contributors of these projects for their valuable work.

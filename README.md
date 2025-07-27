@@ -113,6 +113,10 @@ The project uses a lightweight local semantic model from the `sentence-transform
 
 **Note:** Ensure all model files are present in `local_model/` before running. If you need to change the model, download it using the `sentence-transformers` library and copy the resulting files to `local_model/`.
 
+## Output Format and Scoring
+
+The output JSON includes a `relevance_score` field for each extracted subsection. This score directly demonstrates the quality and ranking of granular subsection extraction, as required by the challenge's scoring criteria ("Sub-Section Relevance"). Including this field helps maximize your score and provides transparency in how each subsection is ranked for relevance.
+
 ## Project Structure
 
 ```

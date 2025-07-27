@@ -1,3 +1,5 @@
+# Dockerfile - Final Corrected Version (with punkt_tab)
+
 # ---- Stage 1: Build ----
 # Use a slim Python image to install dependencies. We name this stage "builder".
 FROM python:3.10-slim as builder
@@ -25,20 +27,18 @@ WORKDIR /app
 # Copy the virtual environment with all the installed packages from the builder stage.
 COPY --from=builder /app/venv /app/venv
 
-# --- THIS IS THE CRITICAL FIX ---
 # Activate the virtual environment for all subsequent commands.
-# This line MUST come BEFORE any RUN commands that need the installed packages.
 ENV PATH="/app/venv/bin:$PATH"
 ENV NLTK_DATA=/app/nltk_data
-# --- END OF FIX ---
 
 # Instead of COPYing, we run the download commands directly in the Dockerfile.
-# These commands will now use the correct Python from the virtual environment.
 RUN mkdir -p local_model && \
     python3 -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); model.save('./local_model')"
 
+# --- THIS IS THE FINAL CORRECTED LINE ---
+# Download BOTH the punkt tokenizer AND its required dependency, punkt_tab.
 RUN mkdir -p nltk_data && \
-    python3 -c "import nltk; nltk.download('punkt', download_dir='./nltk_data')"
+    python3 -c "import nltk; nltk.download(['punkt', 'punkt_tab'], download_dir='./nltk_data')"
 
 # Copy the rest of your application source code.
 COPY . .

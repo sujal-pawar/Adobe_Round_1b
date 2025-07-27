@@ -28,7 +28,13 @@ ENV/
 .vscode/
 .idea/
 
-# Project specific
-test_pdfs/*.pdf
+# --- UPDATED PROJECT-SPECIFIC RULES ---
+# Ignore all PDF and JSON files by default
 output/*.json
-!test_pdfs/sample.pdf
+test_pdfs/*.pdf
+
+# But DO NOT ignore these specific sample PDFs needed for the Docker demo
+!test_pdfs/SouthofFranceCities.pdf
+!test_pdfs/SouthofFranceCuisine.pdf
+!test_pdfs/SouthofFranceHistory.pdf
+!test_pdfs/SouthofFranceRestaurantsandHotels.pdf

@@ -1,6 +1,7 @@
 import argparse
 import json
 import time
+import os  # --- 1. Import the 'os' module ---
 from datetime import datetime
 from parser import extract_sections
 from embedder import Embedder
@@ -13,6 +14,13 @@ def convert_rank_to_relevance_score(rank, max_rank=5):
 
 def main(pdf_list, persona, job, output_json):
     start = time.time()
+    
+    # --- 2. Add code to ensure the output directory exists ---
+    output_dir = os.path.dirname(output_json)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    # --- End of new code ---
+
     embedder = Embedder()
     prompt = f"{persona} {job}"
     prompt_emb = embedder.embed([prompt])[0]
@@ -20,9 +28,7 @@ def main(pdf_list, persona, job, output_json):
     all_sections = []
     for pdf in pdf_list:
         secs = extract_sections(pdf)
-        print(f"[DEBUG] {pdf}: {len(secs)} sections extracted")
         all_sections.extend(secs)
-    print(f"[DEBUG] Total sections from all PDFs: {len(all_sections)}")
 
     extracted_sections = []
     subsection_analysis = []
@@ -30,15 +36,12 @@ def main(pdf_list, persona, job, output_json):
     top_k_per_pdf = 5
     
     for pdf in pdf_list:
-        # --- START: Add try...except block to handle problematic PDFs ---
         try:
             pdf_sections = [sec for sec in all_sections if sec["document"] == pdf]
             if not pdf_sections:
-                print(f"[DEBUG] No sections to rank for {pdf}, skipping.")
                 continue
                 
             ranked_secs = rank_sections(pdf_sections, prompt_emb, embedder, top_k=top_k_per_pdf)
-            print(f"[DEBUG] Ranked sections for {pdf}: {len(ranked_secs)}")
             
             for idx, sec in enumerate(ranked_secs, start=1):
                 extracted_sections.append({
@@ -58,11 +61,9 @@ def main(pdf_list, persona, job, output_json):
                         "relevance_score": convert_rank_to_relevance_score(sub["rank"])
                     })
         except Exception as e:
-            # Gracefully handle the error and continue to the next document
             safe_pdf_path = pdf.encode('utf-8', 'ignore').decode('utf-8')
             print(f"⚠️ [WARNING] Failed to process document '{safe_pdf_path}'. Error: {e}. Skipping this document.")
             continue
-        # --- END: try...except block ---
 
     metadata = {
         "input_documents": pdf_list,

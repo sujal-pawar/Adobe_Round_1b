@@ -14,7 +14,8 @@ A tool for extracting and refining sections from PDF documents using semantic se
 
 ## Features
 
--   Extract sections from PDF documents.
+-   Robust extraction of sections from diverse PDF formats, including travel and non-academic documents.
+-   Relaxed heading detection logic for improved extraction from travel PDFs and documents with non-standard formatting.
 -   Semantic search using a local sentence-transformer model.
 -   Section refinement based on relevance to a given persona and job.
 -   Fully offline operation with no external API calls.

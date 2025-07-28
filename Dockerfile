@@ -1,5 +1,3 @@
-# Dockerfile - The version that was ~1.6GB and worked offline
-
 # ---- Stage 1: Build & Data Preparation ----
 # Use a slim Python image to build dependencies and download data.
 # Note: This used python:3.10-slim, not debian:bullseye-slim

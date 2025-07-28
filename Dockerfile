@@ -1,20 +1,24 @@
-# Dockerfile - The "Surgical Copy" Final Version
+# Dockerfile - The version that was ~1.6GB and worked offline
 
 # ---- Stage 1: Build & Data Preparation ----
-# This stage prepares all our dependencies and data. It can be as large as it needs to be.
+# Use a slim Python image to build dependencies and download data.
+# Note: This used python:3.10-slim, not debian:bullseye-slim
 FROM python:3.10-slim as builder
 
+# Set the working directory
 WORKDIR /app
 
-# Create and use a virtual environment for a clean dependency install.
+# Create and activate a venv
 ENV VIRTUAL_ENV=/app/venv
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Install all dependencies into the venv.
+# Copy only requirements for caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+
+# Install CPU-only PyTorch and other deps. Added --timeout 1000 here to help with stability.
+RUN pip install --timeout 1000 --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --timeout 1000 --no-cache-dir -r requirements.txt
 
 # Download the models and data into a dedicated folder.
 RUN mkdir -p /app/model_data/local_model && \
@@ -25,27 +29,25 @@ RUN mkdir -p /app/model_data/nltk_data && \
 
 
 # ---- Stage 2: Final Production Image ----
-# This stage builds the minimal final image, taking only what it needs.
+# Start from a fresh, clean base image for the final submission.
+# Note: This used python:3.10-slim, not gcr.io/distroless/python3-debian11
 FROM python:3.10-slim
 
+# Set the working directory
 WORKDIR /app
 
-# --- THE ULTIMATE FIX: SURGICAL COPY ---
-# Instead of copying the whole venv, copy ONLY the installed packages
-# directly from the builder's venv into the final image's main Python path.
-# This is the key to eliminating all bloat.
-COPY --from=builder /app/venv/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+# Copy the virtual environment with all the installed packages from the builder stage.
+COPY --from=builder /app/venv /app/venv
 
-# Copy the prepared model and NLTK data from the builder stage.
+# Copy ONLY the prepared model and NLTK data from the builder stage.
 COPY --from=builder /app/model_data/local_model/ /app/local_model/
 COPY --from=builder /app/model_data/nltk_data/ /app/nltk_data/
-# --- END OF ULTIMATE FIX ---
 
-# Copy your application source code.
+# Copy the rest of your application source code.
 COPY . .
 
-# Set the environment variable for NLTK.
-# We don't need to set the PATH anymore, as we installed directly to the system Python.
+# Set the environment variables needed for your application to run.
+ENV PATH="/app/venv/bin:$PATH"
 ENV NLTK_DATA=/app/nltk_data
 
 # Define the default command to run your application.
